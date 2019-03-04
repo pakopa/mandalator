@@ -41,7 +41,7 @@
 	actions.addEventListener( 'mousemove', handleMouseMove, false );
 	actions.addEventListener( 'mouseup', updateState, false );
 	actions.addEventListener( 'mouseout', handleMouseOut, false );
-	actions.addEventListener( 'touchend', updateState, false );
+	actions.addEventListener( 'touchend', handleTouchEnd, false );
 
 	// Setup control events
 	gridCrtl.addEventListener( 'change', function () {
@@ -204,11 +204,35 @@
 	// Establish first point
 	function handleTouchStart( evt ) {
 
-		if ( evt.touches.length == 1 ) {
-			evt.preventDefault();
+		if ( evt.touches.length == 1 ) {			
 			previous = updateCursor( evt.touches[0] );
 		}
 
+	}
+
+	// Handle touch draw
+	function handleTouchMove( evt ) {
+
+		if ( evt.touches.length > 0 ) {
+			
+			var current = updateCursor( evt.touches[0] );
+			
+			if (evt.touches.length == 1 && evt.cancelable) {
+				evt.preventDefault();
+				drawUpdate( current );
+			}
+
+			previous = current;
+
+		} else {
+			console.debug( 'Ignored touch event', evt );		
+		}
+	};
+
+	function handleTouchEnd( evt ) {
+		if (evt.touches.length == 0) {
+			updateState();
+		}
 	}
 
 	function handleMouseStart( evt ) {
@@ -216,23 +240,6 @@
 		evt.preventDefault();
 		previous = updateCursor( evt );
 	}
-
-	// Handle touch draw
-	function handleTouchMove( evt ) {
-
-		if ( evt.touches.length == 1 ) {
-
-			evt.preventDefault();
-
-			var current = updateCursor( evt.touches[0] );
-			drawUpdate( current );
-			previous = current;
-
-		} else {
-			console.debug( 'Ignored touch event', evt );
-			return true; // TODO: Check if this is necessary
-		}
-	};
 
 	// Handle mouse draw
 	function handleMouseMove( evt ) {
@@ -252,7 +259,7 @@
 
 		// Check for mousedown status
 		if ( evt.buttons & 1 == 1 ) {
-			updateState( evt );
+			updateState();
 		}
 	}
 
